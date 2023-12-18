@@ -1,0 +1,8 @@
+/.buildpath
+/.project
+/.settings
+/composer.lock
+/.phpunit.cache
+/vendor
+/tools
+/.phpcs-cache
