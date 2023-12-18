@@ -1,0 +1,23 @@
+<?xml version="1.0"?>
+<psalm xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+		    xmlns="https://getpsalm.org/schema/config"
+		    hideExternalErrors="true"
+		    autoloader="vendor/autoload.php"
+		    allowStringToStandInForClass="true" 
+		    errorBaseline="psalm.baseline.xml"
+		    errorLevel="2"
+		    findUnusedBaselineEntry="false"
+		    findUnusedCode="false">
+
+    <projectFiles>
+        <directory name="src" />
+    </projectFiles>
+    
+    <issueHandlers>
+        <PropertyNotSetInConstructor errorLevel="suppress" />
+        <PossiblyNullReference errorLevel="suppress" />
+        <PossiblyNullArgument errorLevel="suppress" />
+        <PossiblyNullPropertyAssignmentValue errorLevel="suppress" />
+        <RedundantConditionGivenDocblockType errorLevel="suppress" />
+    </issueHandlers>
+</psalm>
