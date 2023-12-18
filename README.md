@@ -1,7 +1,7 @@
-# CLI Argument Parser
+# CLI Parser
 
-[![License](http://poser.pugx.org/nerou/cli-argument-parser/license)](https://packagist.org/packages/nerou/cli-argument-parser)
-[![Version](http://poser.pugx.org/nerou/cli-argument-parser/version)](https://packagist.org/packages/nerou/cli-argument-parser)
+[![License](http://poser.pugx.org/nerou/cli-parser/license)](https://packagist.org/packages/nerou/cli-parser)
+[![Version](http://poser.pugx.org/nerou/cli-parser/version)](https://packagist.org/packages/nerou/cli-parser)
 
 This project is build around a slightly modified version of [this fairly old comment on php.net](https://www.php.net/manual/en/features.commandline.php#83843).
 
@@ -15,7 +15,7 @@ Note: This library requires PHP 8.0+!
 
 Use composer to install this library:
 
-`composer require nerou/cli-argument-parser`
+`composer require nerou/cli-parser`
 
 There are no dependencies.
 
