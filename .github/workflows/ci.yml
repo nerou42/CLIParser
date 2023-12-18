@@ -62,7 +62,10 @@ jobs:
           dev: no
           php_version: "${{ matrix.php }}"
       - uses: php-actions/phpunit@v3
+        env:
+          XDEBUG_MODE: coverage
         with:
           version: 10
           php_version: "${{ matrix.php }}"
+          php_extensions: xdebug
           args: --coverage-text
