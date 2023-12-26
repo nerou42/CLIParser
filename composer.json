@@ -19,9 +19,11 @@
     "prefer-stable": true,
     "autoload": {
         "psr-4": {
-            "CLIParser\\": "src/",
-            "": "src/"
-        }
+            "CLIParser\\": "src/"
+        },
+        "files": [
+            "src/functions.php"
+        ]
     },
     "autoload-dev": {
         "psr-4": {
