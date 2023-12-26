@@ -19,7 +19,8 @@
     "prefer-stable": true,
     "autoload": {
         "psr-4": {
-            "CLIParser\\": "src/"
+            "CLIParser\\": "src/",
+            "": "src/"
         }
     },
     "autoload-dev": {
