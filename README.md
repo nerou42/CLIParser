@@ -1,8 +1,8 @@
 # CLI Parser
 
-[![License](http://poser.pugx.org/nerou/cli-parser/license)](https://packagist.org/packages/nerou/cli-parser)
-[![PHP Version Require](http://poser.pugx.org/nerou/cli-parser/require/php)](https://packagist.org/packages/nerou/cli-parser)
-[![Version](http://poser.pugx.org/nerou/cli-parser/version)](https://packagist.org/packages/nerou/cli-parser)
+[![License](https://poser.pugx.org/nerou/cli-parser/license)](https://packagist.org/packages/nerou/cli-parser)
+[![PHP Version Require](https://poser.pugx.org/nerou/cli-parser/require/php)](https://packagist.org/packages/nerou/cli-parser)
+[![Version](https://poser.pugx.org/nerou/cli-parser/version)](https://packagist.org/packages/nerou/cli-parser)
 [![Psalm Type Coverage](https://shepherd.dev/github/nerou42/CLIParser/coverage.svg)](https://packagist.org/packages/nerou/cli-parser)
 
 This project is build around a slightly modified version of [this fairly old comment on php.net](https://www.php.net/manual/en/features.commandline.php#83843).
