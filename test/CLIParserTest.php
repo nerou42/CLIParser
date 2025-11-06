@@ -81,7 +81,7 @@ class CLIParserTest extends TestCase {
    */
   #[DataProvider('provideData')]
   public function test(array $args, bool $strict, bool $expectedResult, array $expectedOptions, array $expectedCommands,
-      array $expectedArguments, array $allowedOptions = null, array $allowedFlags = null): void {
+      array $expectedArguments, ?array $allowedOptions = null, ?array $allowedFlags = null): void {
     $parser = new CLIParser($args);
     $parser->setStrictMode($strict);
     if($allowedOptions !== null){
