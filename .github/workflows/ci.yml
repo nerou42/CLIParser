@@ -44,15 +44,20 @@ jobs:
       matrix:
         php: 
           - version: "8.0"
-            phpunit: "9" 
+            phpunit: "9"
+            args: "" 
           - version: "8.1"
             phpunit: "10"
+            args: ""
           - version: "8.2"
             phpunit: "10"
+            args: ""
           - version: "8.3"
             phpunit: "11"
+            args: ""
           - version: "8.4"
             phpunit: "12"
+            args: --display-deprecations --display-phpunit-deprecations
 
     name: "Test: PHP ${{ matrix.php.version }}"
 
@@ -74,7 +79,7 @@ jobs:
           version: "${{ matrix.php.phpunit }}"
           php_version: "${{ matrix.php.version }}"
           php_extensions: xdebug
-          args: --coverage-text --display-deprecations --display-phpunit-deprecations
+          args: "--coverage-text ${{ matrix.php.args }}"
 
   rector:
     runs-on: ubuntu-latest
