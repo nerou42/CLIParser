@@ -6,14 +6,15 @@ namespace CLIParser;
 /**
  * @author Andreas Wahlen
  */
-class CLIParser {
+final class CLIParser {
 
   /**
-   * @var list<string>
+   * @var string[]
+   * @psalm-var list<string>
    */
   private array $args;
   /**
-   * @var null|list<string>|array<string, array{
+   * @psalm-var null|list<string>|array<string, array{
    *    filter: int,
    *    flags?: int,
    *    options?: array
@@ -21,24 +22,27 @@ class CLIParser {
    */
   private ?array $allowedOptions = null;
   /**
-   * @var null|array<string, string>
+   * @psalm-var null|array<string, string>
    */
   private ?array $allowedFlags = null;
   private bool $strictMode = false;
   /**
-   * @var array<string, true|string>
+   * @psalm-var array<string, true|string>
    */
   private array $options = [];
   /**
-   * @var list<string>
+   * @var string[]
+   * @psalm-var list<string>
    */
   private array $commands = [];
   /**
-   * @var list<string>
+   * @var string[]
+   * @psalm-var list<string>
    */
   private array $arguments = [];
   /**
-   * @var list<string>
+   * @var string[]
+   * @psalm-var list<string>
    */
   private array $errors = [];
   
@@ -152,8 +156,8 @@ class CLIParser {
     $this->errors = [];
     if($this->allowedOptions !== null){
       foreach($this->allowedOptions as $key => $option){
-        if(is_string($key) && isset($option['options']['default'])){
-          $this->options[$key] = strval($option['options']['default']);
+        if(is_string($key) && isset($option['options']['default']) && is_string($option['options']['default'])){
+          $this->options[$key] = $option['options']['default'];
         }
       }
     }
@@ -176,6 +180,9 @@ class CLIParser {
             $option = mb_substr($option, 0, $equalPos);
           } else if(($this->args[0][0] ?? '-') !== '-'){  // is the option not followed by another option/flag but by arguments
             while(($this->args[0][0] ?? '-') !== '-'){
+              /**
+               * @psalm-suppress PossiblyNullOperand
+               */
               $value .= array_shift($this->args).' ';
             }
             $value = rtrim($value, ' ');
@@ -210,6 +217,9 @@ class CLIParser {
           } else if(($this->args[0][0] ?? '-') !== '-'){  // is the flag not followed by another option/flag but by arguments
             $value = '';
             while(($this->args[0][0] ?? '-') !== '-'){
+              /**
+               * @psalm-suppress PossiblyNullOperand
+               */
               $value .= array_shift($this->args).' ';
             }
             $value = rtrim($value, ' ');

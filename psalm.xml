@@ -5,7 +5,7 @@
 		    autoloader="vendor/autoload.php"
 		    allowStringToStandInForClass="true" 
 		    errorBaseline="psalm.baseline.xml"
-		    errorLevel="2"
+		    errorLevel="1"
 		    findUnusedBaselineEntry="false"
 		    findUnusedCode="false">
 
