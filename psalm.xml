@@ -14,10 +14,6 @@
     </projectFiles>
     
     <issueHandlers>
-        <PropertyNotSetInConstructor errorLevel="suppress" />
-        <PossiblyNullReference errorLevel="suppress" />
-        <PossiblyNullArgument errorLevel="suppress" />
-        <PossiblyNullPropertyAssignmentValue errorLevel="suppress" />
-        <RedundantConditionGivenDocblockType errorLevel="suppress" />
+        
     </issueHandlers>
 </psalm>
