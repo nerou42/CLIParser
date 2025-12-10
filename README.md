@@ -42,12 +42,12 @@ if(PHP_SAPI !== 'cli' || !isset($_SERVER['argv'])){
   exit(1);          // exit if not run via CLI
 }
 
-$cliArgs = new CLIParser($_SERVER['argv']);
+$cliArgs = new CLIParser($_SERVER['argv'], '[--foo] [--bar]');
 $cliArgs->setAllowedOptions(['foo', 'bar']);    // list of supported options
 $cliArgs->setAllowedFlags(['f' => 'foo']);      // maps flags to options
 $cliArgs->setStrictMode(true);                  // parse() will return `false` if there are options/flags that are not allowed
 if(!$cliArgs->parse()){
-  printUsage();     // show them how to use this script
+  $cliArgs->printUsage();     // show them how to use this script
   exit(1);
 }
 ```
@@ -60,8 +60,11 @@ $cliArgs->setAllowedOptions([
         'filter' => FILTER_VALIDATE_FLOAT,
         'flags' => FILTER_FLAG_ALLOW_THOUSAND,
         'options' => [
-            'min_range' => 0
-        ]
+            'min_range' => 0,
+            'default' => 42                   // default value which will also be added to usage documentation
+        ],
+        'value_label' => 'my-val',            // for usage documentation
+        'description' => 'pass some float'    // for usage documentation
     ], 
     'bar' => []     // defaults to `['filter' => FILTER_DEFAULT]`
 ]);
@@ -73,4 +76,4 @@ $cliArgs->setAllowedOptions([
 
 ## License
 
-This library is licensed under the MIT License (MIT). Please see [LICENSE](LICENSE) for more information.
+This library is licensed under the MIT License. Please see [LICENSE](LICENSE) for more information.
