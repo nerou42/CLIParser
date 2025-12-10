@@ -10,9 +10,14 @@ final class CLIParser {
 
   /**
    * @var string[]
+   * @readonly
    * @psalm-var list<string>
    */
   private array $args;
+  /**
+   * @readonly
+   */
+  private string $optionsString;
   /**
    * @psalm-var null|list<string>|array<string, array{
    *    filter: int,
@@ -20,7 +25,9 @@ final class CLIParser {
    *    options?: array{
    *      default?: scalar,
    *      ...
-   *    }
+   *    },
+   *    value_label?: string,
+   *    description?: string
    *  }>
    */
   private ?array $allowedOptions = null;
@@ -52,10 +59,11 @@ final class CLIParser {
   /**
    * @param string[] $args e.g. $_SERVER['argv']
    * @psalm-param list<string> $args
+   * @param string $optionsString will be printed inside usage documentation right after the script name and should contain e.g. `--in=<file> [--out=<file>]` 
    */
-  public function __construct(array $args) {
-    array_shift($args);
+  public function __construct(array $args, string $optionsString = '') {
     $this->args = $args;
+    $this->optionsString = $optionsString;
   }
   
   /**
@@ -68,7 +76,9 @@ final class CLIParser {
    *    options?: array{
    *      default?: scalar,
    *      ...
-   *    }
+   *    },
+   *    value_label?: string,
+   *    description?: string
    *  }> $allowedOptions
    * @see https://www.php.net/manual/en/function.filter-var-array.php
    */
@@ -107,6 +117,61 @@ final class CLIParser {
    */
   public function setStrictMode(bool $strictMode): void {
     $this->strictMode = $strictMode;
+  }
+  
+  public function printUsage(): void {
+    $usage = "\e[33mUsage:\e[0m".PHP_EOL;
+    $script = $_SERVER['argv'][0] ?? 'script.php';
+    $usage .= 'php '.$script.' '.$this->optionsString.PHP_EOL.PHP_EOL;
+    if(!empty($this->allowedOptions)){
+      $usage .= "\e[33mOptions:\e[0m".PHP_EOL;
+      $isList = array_is_list($this->allowedOptions);
+      $options = [];
+      foreach($this->allowedOptions as $key => $option){
+        if($isList){
+          /**
+           * @var string $option
+           * @var string|false $flag
+           */
+          $flag = array_search($option, $this->allowedFlags ?? [], true);
+          $options[] = [
+            'name' => $option,
+            'flag' => $flag,
+            'value' => '',
+            'description' => '',
+            'default' => null
+          ];
+        } else {
+          /**
+           * @var string $key
+           * @var string|false $flag
+           */
+          $flag = array_search($key, $this->allowedFlags ?? [], true);
+          $options[] = [
+            'name' => $key,
+            'flag' => $flag,
+            'value' => $option['value_label'] ?? '',
+            'description' => $option['description'] ?? '',
+            'default' => $option['options']['default'] ?? null
+          ];
+        }
+      }
+      $maxLength = 0;
+      foreach($options as $key => $opt){
+        $len = strlen(($opt['flag'] === false ? '' : '-'.$opt['flag'].', ').'--'.$opt['name'].(empty($opt['value']) ? '' : '=<'.$opt['value'].'>'));
+        $options[$key]['length'] = $len;
+        if($maxLength < $len){
+          $maxLength = $len;
+        }
+      }
+      foreach($options as $option){
+        $padding = str_pad(' ', $maxLength + 2 - $option['length']);
+        $usage .= "  \e[32m".($option['flag'] === false ? '' : '-'.$option['flag'].', ').'--'.$option['name']."\e[0m".(empty($option['value']) ? '' : "=<\e[34m".$option['value']."\e[0m>").
+            $padding.$option['description'].($option['default'] === null ? '' : " DEFAULT: \e[34m".strval($option['default'])."\e[0m").PHP_EOL;
+      }
+      $usage .= PHP_EOL;
+    }
+    echo $usage;
   }
   
   private function validateOption(string $option, ?string $value): bool {
@@ -171,7 +236,9 @@ final class CLIParser {
     }
     
     $endofoptions = false;
-    while(($arg = array_shift($this->args)) !== null){
+    $args = $this->args;
+    array_shift($args);
+    while(($arg = array_shift($args)) !== null){
       if($endofoptions){    // if we have reached end of options, we cast all remaining argvs as arguments
         $this->arguments[] = $arg;
         
@@ -186,12 +253,12 @@ final class CLIParser {
           if($equalPos !== false){    // is it the syntax '--option=value'?
             $value = mb_substr($option, $equalPos + 1);
             $option = mb_substr($option, 0, $equalPos);
-          } else if(($this->args[0][0] ?? '-') !== '-'){  // is the option not followed by another option/flag but by arguments
-            while(($this->args[0][0] ?? '-') !== '-'){
+          } else if(($args[0][0] ?? '-') !== '-'){  // is the option not followed by another option/flag but by arguments
+            while(($args[0][0] ?? '-') !== '-'){
               /**
                * @psalm-suppress PossiblyNullOperand
                */
-              $value .= array_shift($this->args).' ';
+              $value .= array_shift($args).' ';
             }
             $value = rtrim($value, ' ');
           }
@@ -222,13 +289,13 @@ final class CLIParser {
           $value = null;
           if($chr === '='){    // is it the syntax '-f=value'?
             $value = mb_substr($arg, $i + 1);
-          } else if(($this->args[0][0] ?? '-') !== '-'){  // is the flag not followed by another option/flag but by arguments
+          } else if(($args[0][0] ?? '-') !== '-'){  // is the flag not followed by another option/flag but by arguments
             $value = '';
-            while(($this->args[0][0] ?? '-') !== '-'){
+            while(($args[0][0] ?? '-') !== '-'){
               /**
                * @psalm-suppress PossiblyNullOperand
                */
-              $value .= array_shift($this->args).' ';
+              $value .= array_shift($args).' ';
             }
             $value = rtrim($value, ' ');
           }

@@ -1,8 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<files psalm-version="5.18.0@b113f3ed0259fd6e212d87c3df80eec95a6abf19">
+<files psalm-version="6.13.1@1e3b7f0a8ab32b23197b91107adc0a7ed8a05b51">
   <file src="src/CLIParser.php">
     <InvalidPropertyAssignmentValue>
-      <code>$allowedOptions</code>
+      <code><![CDATA[$allowedOptions]]></code>
     </InvalidPropertyAssignmentValue>
+    <RiskyTruthyFalsyComparison>
+      <code><![CDATA[empty($opt['value'])]]></code>
+      <code><![CDATA[empty($option['value'])]]></code>
+      <code><![CDATA[empty($this->allowedOptions)]]></code>
+    </RiskyTruthyFalsyComparison>
   </file>
 </files>
