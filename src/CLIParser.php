@@ -17,7 +17,10 @@ final class CLIParser {
    * @psalm-var null|list<string>|array<string, array{
    *    filter: int,
    *    flags?: int,
-   *    options?: array
+   *    options?: array{
+   *      default?: scalar,
+   *      ...
+   *    }
    *  }>
    */
   private ?array $allowedOptions = null;
@@ -27,7 +30,7 @@ final class CLIParser {
   private ?array $allowedFlags = null;
   private bool $strictMode = false;
   /**
-   * @psalm-var array<string, true|string>
+   * @psalm-var array<string, scalar>
    */
   private array $options = [];
   /**
@@ -56,13 +59,16 @@ final class CLIParser {
   }
   
   /**
-   * @param array $allowedOptions either a list of names of options (without --) or an array mapping option names
+   * @param array $allowedOptions either a list of names of options (without `--`) or an array mapping option names
    *    to PHP's filter_var structures (array with filter, flags and options). Empty arrays as values will be replaced with
-   *    ['filter' => FILTER_DEFAULT]
+   *    `['filter' => FILTER_DEFAULT]`
    * @psalm-param list<string>|array<string, array{
    *    filter?: int,
    *    flags?: int,
-   *    options?: array
+   *    options?: array{
+   *      default?: scalar,
+   *      ...
+   *    }
    *  }> $allowedOptions
    * @see https://www.php.net/manual/en/function.filter-var-array.php
    */
@@ -116,7 +122,9 @@ final class CLIParser {
        *  } $filterConf
        */
       $filterConf = $this->allowedOptions[$option];
-      /** @var false|string $res */
+      /**
+       * @var scalar $res
+       */
       $res = filter_var($value, $filterConf['filter'], $filterConf);
       if($res === false){
         $this->errors[] = 'Invalid value for option "'.$option.'": "'.(isset($value) ? '"'.$value.'"' : 'null').'"';
@@ -146,8 +154,8 @@ final class CLIParser {
   /**
    * flags start with single hyphens
    * options start with double hyphens
-   * commands do not start with hyphens and are positioned before "--" (end of options)
-   * arguments follow behind a "--" (end of options)
+   * commands do not start with hyphens and are positioned before `--` (end of options)
+   * arguments follow behind a `--` (end of options)
    * @author thomas.harding@laposte.net
    * @author Andreas Wahlen
    * @see https://www.php.net/manual/en/features.commandline.php#83843
@@ -156,8 +164,8 @@ final class CLIParser {
     $this->errors = [];
     if($this->allowedOptions !== null){
       foreach($this->allowedOptions as $key => $option){
-        if(is_string($key) && isset($option['options']['default']) && is_string($option['options']['default'])){
-          $this->options[$key] = $option['options']['default'];
+        if(is_string($key) && isset($option['options']['default'])){
+          $this->options[$key] = strval($option['options']['default']);
         }
       }
     }
@@ -250,7 +258,7 @@ final class CLIParser {
   }
   
   /**
-   * @psalm-return array<string, true|string>
+   * @psalm-return array<string, scalar>
    * @psalm-mutation-free
    */
   public function getOptions(): array {
