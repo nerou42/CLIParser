@@ -73,6 +73,32 @@ class CLIParserTest extends TestCase {
         [],
         ['opt1' => ['filter' => FILTER_VALIDATE_INT]]
       ],
+      // Test broken flag validation as present in <=0.2.0
+      [
+        ['', '-t', '1'],
+        true,
+        true,
+        ['test' => 1],
+        [],
+        [],
+        ['test' => ['filter' => FILTER_VALIDATE_INT, 'options' => ['min_range' => 0]]],
+        ['t' => 'test']
+      ],
+      // Test multiple flags as single arg
+      [
+        ['', '-abt', '1'],
+        true,
+        true,
+        ['alice' => '', 'bob' => 0, 'test' => 1],
+        [],
+        [],
+        [
+          'alice' => ['filter' => FILTER_DEFAULT, 'flags' => FILTER_REQUIRE_SCALAR],
+          'bob' => ['filter' => FILTER_VALIDATE_INT, 'options' => ['min_range' => 0, 'default' => 0]],
+          'test' => ['filter' => FILTER_VALIDATE_INT, 'options' => ['min_range' => 0]]
+        ],
+        ['a' => 'alice', 'b' => 'bob', 't' => 'test']
+      ]
     ];
   }
   
@@ -91,7 +117,7 @@ class CLIParserTest extends TestCase {
       $parser->setAllowedFlags($allowedFlags);
     }
     $this->assertSame($expectedResult, $parser->parse());
-    $this->assertSame($expectedOptions, $parser->getOptions());
+    $this->assertEquals($expectedOptions, $parser->getOptions());
     $this->assertSame($expectedCommands, $parser->getCommands());
     $this->assertSame($expectedArguments, $parser->getArguments());
   }

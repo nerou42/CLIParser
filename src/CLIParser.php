@@ -175,10 +175,10 @@ final class CLIParser {
   }
   
   private function validateOption(string $option, ?string $value): bool {
-    if($this->allowedOptions === null || (array_is_list($this->allowedOptions) && in_array($option, $this->allowedOptions))){
+    if($this->allowedOptions === null || (array_is_list($this->allowedOptions) && in_array($option, $this->allowedOptions, true))){
       $this->options[$option] = $value ?? true;
       return true;
-    } else if(array_key_exists($option, $this->allowedOptions)){
+    } elseif(array_key_exists($option, $this->allowedOptions)){
       /**
        * @var array{
        *    filter: int,
@@ -208,7 +208,7 @@ final class CLIParser {
     if($this->allowedFlags === null){
       $this->options[$flag] = $value ?? true;
       return true;
-    } else if(array_key_exists($flag, $this->allowedFlags) && $this->allowedOptions !== null){
+    } elseif(array_key_exists($flag, $this->allowedFlags) && $this->allowedOptions !== null){
       return $this->validateOption($this->allowedFlags[$flag], $value);
     } else {
       $this->errors[] = 'Unknown flag "'.$flag.'"';
@@ -242,7 +242,7 @@ final class CLIParser {
       if($endofoptions){    // if we have reached end of options, we cast all remaining argvs as arguments
         $this->arguments[] = $arg;
         
-      } else if(mb_substr($arg, 0, 2) === '--'){   // is it an option? (prefixed with --)
+      } elseif(mb_substr($arg, 0, 2) === '--'){   // is it an option? (prefixed with --)
         if(!isset($arg[3])){   // is it the end of options flag?
           $endofoptions = true;
         } else {
@@ -253,7 +253,7 @@ final class CLIParser {
           if($equalPos !== false){    // is it the syntax '--option=value'?
             $value = mb_substr($option, $equalPos + 1);
             $option = mb_substr($option, 0, $equalPos);
-          } else if(($args[0][0] ?? '-') !== '-'){  // is the option not followed by another option/flag but by arguments
+          } elseif(($args[0][0] ?? '-') !== '-'){  // is the option not followed by another option/flag but by arguments
             while(($args[0][0] ?? '-') !== '-'){
               /**
                * @psalm-suppress PossiblyNullOperand
@@ -269,41 +269,9 @@ final class CLIParser {
           }
         }
         
-      } else if(mb_substr($arg, 0, 1) === '-'){    // is it a flag or a serial of flags? (prefixed with -)
-        $flag = null;
-        $argLen = mb_strlen($arg);
-        for($i = 1; $i < $argLen; $i++){
-          $chr = mb_substr($arg, $i, 1);
-          if($chr !== '='){
-            $flag = $chr;
-            $valRes = $this->validateFlag($flag, null);
-            if($valRes === false && $this->strictMode){
-              $this->reset();
-              return false;
-            }
-          } else {
-            break;
-          }
-        }
-        if(isset($flag, $chr)){
-          $value = null;
-          if($chr === '='){    // is it the syntax '-f=value'?
-            $value = mb_substr($arg, $i + 1);
-          } else if(($args[0][0] ?? '-') !== '-'){  // is the flag not followed by another option/flag but by arguments
-            $value = '';
-            while(($args[0][0] ?? '-') !== '-'){
-              /**
-               * @psalm-suppress PossiblyNullOperand
-               */
-              $value .= array_shift($args).' ';
-            }
-            $value = rtrim($value, ' ');
-          }
-          $valRes = $this->validateFlag($flag, $value);
-          if($valRes === false && $this->strictMode){
-            $this->reset();
-            return false;
-          }
+      } elseif(mb_substr($arg, 0, 1) === '-'){    // is it a flag or a serial of flags? (prefixed with -)
+        if(!$this->parseFlag($arg, $args)){
+          return false;
         }
         
       } else {    // finally, it is not option, nor flag, nor argument
@@ -315,6 +283,52 @@ final class CLIParser {
       $this->arguments = array_merge($this->commands, $this->arguments);
       $this->commands = [];
     }*/
+    return true;
+  }
+  
+  /**
+   * @param string $arg
+   * @param string[] $args
+   * @psalm-param list<string> $args
+   */
+  private function parseFlag(string $arg, array &$args): bool {
+    $flag = null;
+    $argLen = mb_strlen($arg);
+    for($i = 1; $i < $argLen; $i++){
+      $chr = mb_substr($arg, $i, 1);
+      if($chr !== '='){
+        if(isset($flag)){
+          $valRes = $this->validateFlag($flag, null);
+          if($valRes === false && $this->strictMode){
+            $this->reset();
+            return false;
+          }
+        }
+        $flag = $chr;
+      } else {
+        break;
+      }
+    }
+    if(isset($flag, $chr)){
+      $value = null;
+      if($chr === '='){    // is it the syntax '-f=value'?
+        $value = mb_substr($arg, $i + 1);
+      } elseif(($args[0][0] ?? '-') !== '-'){  // is the flag not followed by another option/flag but by arguments
+        $value = '';
+        while(($args[0][0] ?? '-') !== '-'){
+          /**
+           * @psalm-suppress PossiblyNullOperand
+           */
+          $value .= array_shift($args).' ';
+        }
+        $value = rtrim($value, ' ');
+      }
+      $valRes = $this->validateFlag($flag, $value);
+      if($valRes === false && $this->strictMode){
+        $this->reset();
+        return false;
+      }
+    }
     return true;
   }
   
