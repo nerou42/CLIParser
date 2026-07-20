@@ -21,7 +21,7 @@ jobs:
           key: ${{ runner.os }}-${{ hashFiles('**/composer.lock') }}
       - uses: php-actions/composer@v6
         with:
-          php_version: "8.0"
+          php_version: "8.1"
       - name: Check coding standard
         run: composer phpcs
     
@@ -42,10 +42,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        php: 
-          - version: "8.0"
-            phpunit: "9"
-            args: "" 
+        php:
           - version: "8.1"
             phpunit: "10"
             args: ""
