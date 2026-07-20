@@ -33,6 +33,19 @@ There are no dependencies.
 
 **Argument** is everything following a standalone `--`
 
+### Validation
+
+You can use [PHP's Filter Extension](https://www.php.net/manual/en/book.filter.php) to validate provided option values (see examples below).
+There is a strict mode which can be enabled to abort parsing if there is an option provided for which the validation fails.
+Otherwise, this specific option is ignored.
+Either way, an error will be present when calling `getErrors()`.
+
+When you want to add arrays to your CLI by allowing a single option to be used multiple times, note the following validation behavior:
+
+- The `FILTER_REQUEST_SCALAR` flag does not allow multiple values for a single option, meaning only the last value is parsed.
+- The `FILTER_FORCE_ARRAY` flag works as [documented on php.net](https://www.php.net/manual/en/filter.constants.php#constant.filter-force-array), meaning even if an option is provided only once, the value will be wrapped in an array.
+- The `FILTER_REQUIRE_ARRAY` flag is basically ignored.
+
 ### Examples
 
 Minimal example with options `--foo` and `--bar` as well as the flag `-f` which is a short form of `--foo`:
@@ -69,10 +82,6 @@ $cliArgs->setAllowedOptions([
     'bar' => []     // defaults to `['filter' => FILTER_DEFAULT]`
 ]);
 ```
-
-## Limitations and concerns
-
-- using a single option multiple times is not supported, e.g. `phpcpd src --exclude src/foo --exclude src/bar`
 
 ## License
 

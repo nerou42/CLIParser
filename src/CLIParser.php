@@ -37,7 +37,7 @@ final class CLIParser {
   private ?array $allowedFlags = null;
   private bool $strictMode = false;
   /**
-   * @psalm-var array<string, scalar>
+   * @psalm-var array<string, scalar|list<scalar>>
    */
   private array $options = [];
   /**
@@ -174,9 +174,37 @@ final class CLIParser {
     echo $usage;
   }
   
+  private function setOptionDefaultValues(): void {
+    if($this->allowedOptions !== null){
+      foreach($this->allowedOptions as $key => $option){
+        if(is_string($key) && isset($option['options']['default']) && !isset($this->options[$key])){
+          $this->options[$key] = strval($option['options']['default']);
+        }
+      }
+    }
+  }
+  
+  private function addOptionValue(string $option, string|float|int|bool|null $value): void {
+    if($value === null){
+      $this->options[$option] = true;
+    } elseif(array_key_exists($option, $this->options)) {
+      if(is_array($this->options[$option])){
+        $this->options[$option][] = $value;   // append
+      } elseif(isset($this->allowedOptions[$option]['flags']) && ($this->allowedOptions[$option]['flags'] & FILTER_REQUIRE_SCALAR) === FILTER_REQUIRE_SCALAR) {
+        $this->options[$option] = $value;     // overwrite previous value
+      } else {
+        $this->options[$option] = [$this->options[$option], $value];    // append
+      }
+    } elseif(isset($this->allowedOptions[$option]['flags']) && ($this->allowedOptions[$option]['flags'] & FILTER_FORCE_ARRAY) === FILTER_FORCE_ARRAY) {
+      $this->options[$option] = [$value];   // first occurence
+    } else {
+      $this->options[$option] = $value;   // first occurence
+    }
+  }
+  
   private function validateOption(string $option, ?string $value): bool {
     if($this->allowedOptions === null || (array_is_list($this->allowedOptions) && in_array($option, $this->allowedOptions, true))){
-      $this->options[$option] = $value ?? true;
+      $this->addOptionValue($option, $value);
       return true;
     } elseif(array_key_exists($option, $this->allowedOptions)){
       /**
@@ -187,6 +215,12 @@ final class CLIParser {
        *  } $filterConf
        */
       $filterConf = $this->allowedOptions[$option];
+      if(!isset($filterConf['flags'])){
+        $filterConf['flags'] = 0;
+      }
+      $filterConf['flags'] |= FILTER_REQUIRE_SCALAR;
+      $filterConf['flags'] &= ~FILTER_REQUIRE_ARRAY;
+      $filterConf['flags'] &= ~FILTER_FORCE_ARRAY;
       /**
        * @var scalar $res
        */
@@ -195,7 +229,7 @@ final class CLIParser {
         $this->errors[] = 'Invalid value for option "'.$option.'": "'.(isset($value) ? '"'.$value.'"' : 'null').'"';
         return false;
       } else {
-        $this->options[$option] = $res;
+        $this->addOptionValue($option, $res);
         return true;
       }
     } else {
@@ -227,13 +261,6 @@ final class CLIParser {
    */
   public function parse(): bool {
     $this->errors = [];
-    if($this->allowedOptions !== null){
-      foreach($this->allowedOptions as $key => $option){
-        if(is_string($key) && isset($option['options']['default'])){
-          $this->options[$key] = strval($option['options']['default']);
-        }
-      }
-    }
     
     $endofoptions = false;
     $args = $this->args;
@@ -283,6 +310,7 @@ final class CLIParser {
       $this->arguments = array_merge($this->commands, $this->arguments);
       $this->commands = [];
     }*/
+    $this->setOptionDefaultValues();
     return true;
   }
   
@@ -339,7 +367,7 @@ final class CLIParser {
   }
   
   /**
-   * @psalm-return array<string, scalar>
+   * @psalm-return array<string, scalar|list<scalar>>
    * @psalm-mutation-free
    */
   public function getOptions(): array {

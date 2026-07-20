@@ -6,17 +6,19 @@ namespace CLIParser\test;
 use PHPUnit\Framework\TestCase;
 use CLIParser\CLIParser;
 use PHPUnit\Framework\Attributes\DataProvider;
+use PHPUnit\Framework\Attributes\Small;
 
 /**
  * @author Andreas Wahlen
  */
+#[Small()]
 class CLIParserTest extends TestCase {
 
   public static function provideData(): array {
     $largeArgs = ['', 'cmd1', 'cmd2', '--opt1=val1', 'cmd3', '--opt2', 'val2', '-abc', '-def=val3',
       '-ghi', 'val4', 'val5', '--opt3', '--', 'arg1', 'arg2'];
     return [
-      [
+      'largeArgsNoValidation' => [
         $largeArgs,
         false,
         true,
@@ -25,7 +27,7 @@ class CLIParserTest extends TestCase {
         ['cmd1', 'cmd2', 'cmd3'],
         ['arg1', 'arg2']
       ],
-      [
+      'allAllowed' => [
         ['', 'cmd1', 'cmd2', '--opt4=val1', 'cmd3', '--opt5', 'val2', '-ab', 'val3', '--opt3', '--', 'arg1', 'arg2'],
         false,
         true,
@@ -35,7 +37,7 @@ class CLIParserTest extends TestCase {
         ['opt1', 'opt2', 'opt3', 'opt4', 'opt5'],
         ['a' => 'opt1', 'b' => 'opt2']
       ],
-      [
+      'optionOfFlagNotAllowed' => [
         ['', 'cmd1', 'cmd2', '--opt4=val1', 'cmd3', '--opt5', 'val2', '-ab', 'val3', '--opt3', '--', 'arg1', 'arg2'],
         false,
         true,
@@ -45,7 +47,7 @@ class CLIParserTest extends TestCase {
         ['opt2', 'opt3', 'opt4'],
         ['a' => 'opt1', 'b' => 'opt2']
       ],
-      [
+      'optionOfFlagNotAllowedStrict' => [
         ['', 'cmd1', 'cmd2', '--opt4=val1', 'cmd3', '--opt5', 'val2', '-ab', 'val3', '--opt3', '--', 'arg1', 'arg2'],
         true,
         false,
@@ -55,7 +57,7 @@ class CLIParserTest extends TestCase {
         ['opt2', 'opt3', 'opt4'],
         ['a' => 'opt1', 'b' => 'opt2']
       ],
-      [
+      'filterInt' => [
         ['', '--opt1=123'],
         false,
         true,
@@ -64,7 +66,7 @@ class CLIParserTest extends TestCase {
         [],
         ['opt1' => ['filter' => FILTER_VALIDATE_INT]]
       ],
-      [
+      'filterIntInvalid' => [
         ['', '--opt1=abc'],
         false,
         true,
@@ -74,7 +76,7 @@ class CLIParserTest extends TestCase {
         ['opt1' => ['filter' => FILTER_VALIDATE_INT]]
       ],
       // Test broken flag validation as present in <=0.2.0
-      [
+      'brokenFlagValidation' => [
         ['', '-t', '1'],
         true,
         true,
@@ -85,7 +87,7 @@ class CLIParserTest extends TestCase {
         ['t' => 'test']
       ],
       // Test multiple flags as single arg
-      [
+      'multipleFlagsSingleArg' => [
         ['', '-abt', '1'],
         true,
         true,
@@ -98,6 +100,44 @@ class CLIParserTest extends TestCase {
           'test' => ['filter' => FILTER_VALIDATE_INT, 'options' => ['min_range' => 0]]
         ],
         ['a' => 'alice', 'b' => 'bob', 't' => 'test']
+      ],
+      'optionArray' => [
+        ['', '--opt', 'abc', '-o', '42', '--opt=1337'],
+        true,
+        true,
+        ['opt' => ['abc', '42', '1337']],
+        [],
+        [],
+        ['opt' => ['filter' => FILTER_DEFAULT, 'flags' => FILTER_REQUIRE_ARRAY]],
+        ['o' => 'opt']
+      ],
+      'optionForceArray' => [
+        ['', '--opt', 'abc'],
+        true,
+        true,
+        ['opt' => ['abc']],
+        [],
+        [],
+        ['opt' => ['filter' => FILTER_DEFAULT, 'flags' => FILTER_FORCE_ARRAY]]
+      ],
+      'optionForceScalarButArrayGiven' => [
+        ['', '--opt', 'abc', '--opt', '123'],
+        true,
+        true,
+        ['opt' => '123'],
+        [],
+        [],
+        ['opt' => ['filter' => FILTER_DEFAULT, 'flags' => FILTER_REQUIRE_SCALAR]]
+      ],
+      'brokenFlagParsing' => [
+        ['', '-c', '-d'],
+        false,
+        true,
+        ['alice' => true],
+        [],
+        [],
+        ['alice'],
+        ['c' => 'alice']
       ]
     ];
   }
@@ -116,7 +156,7 @@ class CLIParserTest extends TestCase {
     if($allowedFlags !== null){
       $parser->setAllowedFlags($allowedFlags);
     }
-    $this->assertSame($expectedResult, $parser->parse());
+    $this->assertSame($expectedResult, $parser->parse(), json_encode($parser->getErrors(), JSON_THROW_ON_ERROR | JSON_PRETTY_PRINT));
     $this->assertEquals($expectedOptions, $parser->getOptions());
     $this->assertSame($expectedCommands, $parser->getCommands());
     $this->assertSame($expectedArguments, $parser->getArguments());
