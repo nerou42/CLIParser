@@ -59,7 +59,7 @@ final class CLIParser {
   /**
    * @param string[] $args e.g. $_SERVER['argv']
    * @psalm-param list<string> $args
-   * @param string $optionsString will be printed inside usage documentation right after the script name and should contain e.g. `--in=<file> [--out=<file>]` 
+   * @param string $optionsString will be printed inside usage documentation right after the script name and should contain e.g. `--in=<file> [--out=<file>]`
    */
   public function __construct(array $args, string $optionsString = '') {
     $this->args = $args;
