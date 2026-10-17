@@ -60,9 +60,6 @@ jobs:
             args: ""
           - version: "8.5"
             phpunit: "12"
-            args: ""
-          - version: "8.6.0RC3"
-            phpunit: "12"
             args: --display-deprecations --display-phpunit-deprecations
 
     name: "Test: PHP ${{ matrix.php.version }}"
