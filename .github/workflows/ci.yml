@@ -78,6 +78,7 @@ jobs:
         with:
           dev: no
           php_version: "${{ matrix.php.version }}"
+          php_extensions: mbstring
       - uses: php-actions/phpunit@v4
         env:
           XDEBUG_MODE: coverage
