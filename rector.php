@@ -12,7 +12,7 @@ return static function (RectorConfig $rectorConfig): void {
     __DIR__.'/test'
   ]);
   
-  $rectorConfig->phpVersion(PhpVersion::PHP_85);
+  $rectorConfig->phpVersion(PhpVersion::PHP_86);
 
   $rectorConfig->sets([
     LevelSetList::UP_TO_PHP_80
