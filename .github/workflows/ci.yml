@@ -84,7 +84,7 @@ jobs:
         with:
           version: "${{ matrix.php.phpunit }}"
           php_version: "${{ matrix.php.version }}"
-          php_extensions: xdebug
+          php_extensions: xdebug mbstring
           args: "--coverage-text ${{ matrix.php.args }}"
 
   rector:

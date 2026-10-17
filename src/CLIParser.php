@@ -215,9 +215,7 @@ final class CLIParser {
        *  } $filterConf
        */
       $filterConf = $this->allowedOptions[$option];
-      if(!isset($filterConf['flags'])){
-        $filterConf['flags'] = 0;
-      }
+      $filterConf['flags'] ??= 0;
       $filterConf['flags'] |= FILTER_REQUIRE_SCALAR;
       $filterConf['flags'] &= ~FILTER_REQUIRE_ARRAY;
       $filterConf['flags'] &= ~FILTER_FORCE_ARRAY;
